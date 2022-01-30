@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  web-service:
+    build:
+      context: services
+      dockerfile: docker/release-app.dockerfile
+    image: web-service:1.0
+    container_name: web-service
+    environment:
+      # Remote debug settings:
+      - JPDA_ADDRESS=8888
+      - JPDA_TRANSPORT=dt_socket
+      - DB_URL=jdbc:postgresql://admin-panel-db:5432/book_shop
+    ports:
+      - 8080:8080
+      - 8888:8888
+    depends_on:
+      - admin-panel-db
+
+  admin-panel-db:
+    build:
+      context: services
+      dockerfile: docker/release-db.dockerfile
+    image: release_admin_panel_db:1.0
+    container_name: release_admin_panel_db
+    ports:
+      - 5555:5432
+
+  restclient:
+    build: ./client
+    container_name: restclient
+    depends_on:
+      - web-service
+    volumes:
+      - ./site:/usr/src/app/target/site
+
